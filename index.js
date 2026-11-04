@@ -40,7 +40,7 @@ app.post("/events", async (req, res) => {
   // console.log(result)
   res.send(result);
 });
-// only upcoming events get api:
+// only upcoming all events get api:
 app.get("/upcoming-events", async (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   const result = await createCollection
@@ -50,6 +50,13 @@ app.get("/upcoming-events", async (req, res) => {
   res.send(result);
   // console.log(result);
 });
+// creator event by user email: get api:
+app.get("/manage-events/:email", async (req, res) => {
+  const email = req.params.email;
+  const result = await createCollection.find({ creatorEmail: email }).toArray();
+  // console.log(result, 'creator event user by email is')
+  res.send(result);
+});
 // event detail page api:
 app.get("/upcoming-events/:id", async (req, res) => {
   const id = req.params.id;
@@ -58,6 +65,25 @@ app.get("/upcoming-events/:id", async (req, res) => {
   res.send(result);
   // console.log(result, 'the single id data is');
 });
+// edit events patch api:
+app.patch("/upcoming-events/:id", async (req, res) => {
+  const id = req.params.id;
+  const { _id, ...updateData } = req.body;
+  const result = await createCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updateData },
+  );
+  res.send(result);
+  // console.log(result,'and', updateData);
+});
+// delete event api:
+app.delete('/upcoming-events/:id', async(req, res) => {
+  const id = req.params.id;
+  const result = await createCollection.deleteOne({_id: new ObjectId(id)});
+  console.log(result)
+  
+  res.send(result);
+})
 // __________________________________
 // joined-events post api:
 app.post("/joined-events", async (req, res) => {
@@ -68,12 +94,15 @@ app.post("/joined-events", async (req, res) => {
   // console.log(result, "joined post api");
 });
 // joined-events get api:
-app.get('/joined-events/:email', async(req, res)=>{
+app.get("/joined-events/:email", async (req, res) => {
   const email = req.params.email;
-  const result = await joinedEventCollection.find({email:email}).sort({eventDate:1}).toArray();
-  console.log(result,'get all joined data is');
+  const result = await joinedEventCollection
+    .find({ email: email })
+    .sort({ eventDate: 1 })
+    .toArray();
+  console.log(result, "get all joined data is");
   res.send(result);
-})
+});
 // mongodb ends here:
 
 app.listen(PORT, () => {
